@@ -1,0 +1,28 @@
+body{
+	font-family: Helvetica, Tahoma;
+}
+
+*, *:before, *:after{box-sizing: border-box;}
+
+@mixin color-divs ($count, $startcolor) {
+    @for $i from 0 through $count {
+        $background-color: darken($startcolor, $i); 
+	    .colored-#{$i} {
+	      background: $background-color;
+	    }
+   }
+}
+
+@include color-divs(42,#1DA4E2);
+
+.ts-all{
+	width: 1000px; margin: 0 auto; overflow: hidden;
+}
+
+.ts-item{
+	width: 33.3333%; height: 300px; display: inline-block; float: left; padding: 20px;
+}
+
+.ts-item__inner{
+	width: 100%; height: 100%; position: relative; color: #FFF; padding: 30px;
+}
