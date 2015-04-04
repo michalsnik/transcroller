@@ -80,13 +80,10 @@
 	};
 
 	var init = function() {
-		console.log('init');
 		if(compatible){
 			initVirtual();
-			console.log('init virtual');
 		}else{
 			initNative();
-			console.log('init native');
 		}
 	};
 

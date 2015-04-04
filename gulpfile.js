@@ -16,7 +16,7 @@ gulp.task('sass', function () {
                 browsers: ['last 2 versions']
             }
         }))
-        .pipe(gulp.dest('dist/css'))
+        .pipe(gulp.dest('examples/css'))
         .pipe(reload({stream:true}));
 });
 

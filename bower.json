@@ -1,6 +1,6 @@
 {
   "name": "transcroller",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "homepage": "https://github.com/michalsnik/transcroller",
   "authors": [
     "Michał Sajnóg <michal.sajnog@hotmail.com>"
@@ -25,7 +25,7 @@
     "test",
     "tests"
   ],
-  "devDependencies": {
+  "dependencies": {
     "jquery": "~2.1.3"
   }
 }
