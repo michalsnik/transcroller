@@ -1,0 +1,28 @@
+{
+  "name": "transcroller",
+  "version": "0.1.0",
+  "homepage": "https://github.com/michalsnik/transcroller",
+  "authors": [
+    "Michał Sajnóg <michal.sajnog@hotmail.com>"
+  ],
+  "main": "src/js/transcroller.js",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "scroll",
+    "css3",
+    "transition",
+    "transform",
+    "mousewheel",
+    "smooth"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
