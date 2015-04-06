@@ -1,30 +1,19 @@
-;(function($, window, document, undefined) {
+;(function(window, document, undefined) {
 
 	/**
 	 * Private variables
 	 */
-	var _instance;
-	
- 	var enableScroll = true;
-	var scrollTop = 0;
-	var currentScrollTop = 0;
-	var ease = 0.1;
-	var section = document.getElementById('transcroller-body');
-	var sectionHeight = section.getBoundingClientRect().height;
-	var debounceTime = 10; // events will fire max one time every 10ms
-	var events = [];
-	var compatible = false;
+	var _ease = 0.1;
+	var _debounceTime = 10; // events will fire max one time every 10ms
 
-	var helpers = {
-		wHeight : window.innerHeight,
-		dHeight : (function(){
-			if(compatible){
-				return document.body.clientHeight;
-			}else{
-				return sectionHeight;
-			}
-		})()
-	}
+	var _scrollTop = 0;
+	var _currentScrollTop = 0;
+ 	var _enableScroll = true;
+	var _compatible = false;
+
+	var _body = document.getElementById('transcroller-body');
+	var _bodyHeight;
+	var _events = [];
 
 	/**
 	 *	Underscore helpers
@@ -65,22 +54,23 @@
 	};
 
 	var run = function(){
-		var t;
-		var s = section.style;
+		var transform;
 
 		requestAnimationFrame(run);
 		
-		currentScrollTop += Math.round((scrollTop - currentScrollTop) * ease*100)/100;
+		_currentScrollTop -= Math.round((_scrollTop + _currentScrollTop) * _ease*100)/100;
 
-		t = 'translateY(' + currentScrollTop + 'px) translateZ(0)';
-		s["transform"] = t;
-		s["webkitTransform"] = t;
-		s["mozTransform"] = t;
-		s["msTransform"] = t;
+		transform = 'translateY(' + (-_currentScrollTop) + 'px) translateZ(0)';
+		_body.style["transform"] 		= transform;
+		_body.style["webkitTransform"] 	= transform;
+		_body.style["mozTransform"] 	= transform;
+		_body.style["msTransform"] 		= transform;
 	};
 
 	var init = function() {
-		if(compatible){
+		_bodyHeight = _body.getBoundingClientRect().height;
+
+		if(_compatible){
 			initVirtual();
 		}else{
 			initNative();
@@ -88,27 +78,28 @@
 	};
 
 	var initVirtual = function(){
-		$('body').css('overflow', 'hidden');
+		document.body.style.overflow = 'hidden';
+
 		VirtualScroll.on(function(e) {
 			var direction = e.deltaY ? e.deltaY < 0 ? -1 : 1 : 0;
 
-			if(transcroller.enableScroll){
-				scrollTop += e.deltaY;
-				scrollTop = Math.max( (transcroller.sectionHeight - window.innerHeight) * -1, scrollTop);
-				scrollTop = Math.min(0, scrollTop);
+			if(_enableScroll){
+				_scrollTop += e.deltaY;
+				_scrollTop = Math.max( (_bodyHeight - window.innerHeight) * -1, _scrollTop);
+				_scrollTop = Math.min(0, _scrollTop);
 			}
 
-			action(-scrollTop, direction);
+			fireEvents(-_scrollTop, direction);
 		});
 
 		run();	
 	};
 
 	var initNative = function(){
-		$(window).on('scroll', function(e){
-			var scrollTop = $(window).scrollTop();
-			if(transcroller.enableScroll){
-				action(scrollTop, -1);
+		window.addEventListener('scroll', function(e){
+			_scrollTop = _currentScrollTop = (window.pageYOffset !== undefined) ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
+			if(_enableScroll){
+				fireEvents(_scrollTop, -1);
 			}else{
 				e.preventDefault();
 				e.stopPropagation();
@@ -117,43 +108,43 @@
 	};
 
 	var refresh = function(){
-		sectionHeight = section.getBoundingClientRect().height;
+		_bodyHeight = _body.getBoundingClientRect().height;
 
-		if(enableScroll){
-			scrollTop = Math.max( (transcroller.sectionHeight - transcroller.helpers.wHeight) * -1, scrollTop);
-			scrollTop = Math.min(0, scrollTop);
+		if(_enableScroll){
+			_scrollTop = Math.max( (_bodyHeight - window.innerHeight) * -1, _scrollTop);
+			_scrollTop = Math.min(0, _scrollTop);
 		}
 
-		helpers.wHeight = $(window).height();
 	};
 
 	var checkCompatibility = function(){
-		compatible = true;
+		// TODO: check env and set _compatible to appropriate value
+		_compatible = true;
 	};
 
 	var scrollTopValue = function(){
-		return currentScrollTop;
+		return _currentScrollTop;
 	};
 
 	var enable = function(){
-		enableScroll = true;
-		if(!compatible){
-			$('body').disablescroll('undo');
+		_enableScroll = true;
+		if(!_compatible){
+			// $('body').disablescroll('undo');
 		}
 	};
 
 	var disable = function(){
-		enableScroll = false;
-		if(!compatible){
-			$('body').disablescroll();
+		_enableScroll = false;
+		if(!_compatible){
+			// $('body').disablescroll();
 		}
 	};
 
 	var scrollTo = function(scrollTopVal){
-		if(compatible){
-			scrollTop = -scrollTopVal;
+		if(_compatible){
+			_scrollTop = -scrollTopVal;
 			setTimeout(function(){
-				action(scrollTopVal, -1);
+				fireEvents(scrollTopVal, -1);
 			}, 600);
 		}else{
 			animateScrollTo(scrollTopVal);
@@ -161,14 +152,15 @@
 	};
 
 	var addEvent = function(func){
-		events.push(func);
+		_events.push(func);
 	};
 
-	var action = _debounce(function(scrollTop, direction){
-		$.each(events, function(){
-			this(scrollTop, direction);
-		});
-	}, debounceTime, true);
+	var fireEvents = _debounce(function(scrollTop, direction){
+		var index = 0, length = _events.length ;
+		for( ; index < length; index++ ) {
+			_events[index](scrollTop, direction);
+		}
+	}, _debounceTime, true);
 
 	checkCompatibility();
 
@@ -178,13 +170,10 @@
 	var api = {
 		init : init,
 		addEvent : addEvent,
-		scrollTo: scrollTo,
-		enableScroll: enableScroll,
 		enable: enable,
 		disable: disable,
 		refresh: refresh,
-		helpers: helpers,
-		sectionHeight: sectionHeight,
+		scrollTo: scrollTo,
 		scrollTop: scrollTopValue,
 	};
 
@@ -207,4 +196,4 @@
 		window.transcroller = transcroller;
 	}
 
-})(jQuery, window, document);
+})(window, document);
